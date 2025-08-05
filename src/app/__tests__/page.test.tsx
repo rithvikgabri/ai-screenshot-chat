@@ -8,6 +8,18 @@ jest.mock('@ai-sdk/react', () => ({
   useChat: jest.fn(),
 }))
 
+// Mock ImageCropper component
+jest.mock('@/components/ImageCropper', () => ({
+  ImageCropper: ({ onCropComplete, onCancel }: any) => (
+    <div data-testid="image-cropper">
+      <button onClick={() => onCropComplete('data:image/png;base64,cropped')}>
+        Apply Crop
+      </button>
+      <button onClick={onCancel}>Cancel</button>
+    </div>
+  ),
+}))
+
 // Mock navigator.mediaDevices
 const mockGetDisplayMedia = jest.fn()
 Object.defineProperty(navigator, 'mediaDevices', {
@@ -149,7 +161,7 @@ describe('ChatPage', () => {
       })
     })
 
-    it('should capture screenshot when button is clicked', async () => {
+    it('should show image cropper when screenshot is captured', async () => {
       const mockStop = jest.fn()
       const mockStream = {
         getTracks: jest.fn(() => [{ stop: mockStop }]),
@@ -170,6 +182,40 @@ describe('ChatPage', () => {
         })
       })
       
+      // Should show the cropper instead of immediately adding to messages
+      await waitFor(() => {
+        expect(screen.getByTestId('image-cropper')).toBeInTheDocument()
+      })
+      
+      // Verify stream was stopped
+      expect(mockStop).toHaveBeenCalled()
+      
+      // Verify no message was added yet
+      expect(mockSetMessages).not.toHaveBeenCalled()
+    })
+
+    it('should add cropped image to messages when crop is applied', async () => {
+      const mockStop = jest.fn()
+      const mockStream = {
+        getTracks: jest.fn(() => [{ stop: mockStop }]),
+      }
+      
+      mockGetDisplayMedia.mockResolvedValue(mockStream)
+      
+      const user = userEvent.setup()
+      render(<ChatPage />)
+      
+      const screenshotButton = screen.getByText('📸')
+      await user.click(screenshotButton)
+      
+      await waitFor(() => {
+        expect(screen.getByTestId('image-cropper')).toBeInTheDocument()
+      })
+      
+      // Click apply crop
+      const applyCropButton = screen.getByText('Apply Crop')
+      await user.click(applyCropButton)
+      
       await waitFor(() => {
         expect(mockSetMessages).toHaveBeenCalled()
       })
@@ -179,10 +225,38 @@ describe('ChatPage', () => {
       expect(newMessages).toHaveLength(1)
       expect(newMessages[0].role).toBe('user')
       expect(newMessages[0].parts[0].type).toBe('image-screenshot')
-      expect(newMessages[0].parts[0].data.url).toContain('data:image/png')
+      expect(newMessages[0].parts[0].data.url).toBe('data:image/png;base64,cropped')
+    })
+
+    it('should cancel cropping when cancel button is clicked', async () => {
+      const mockStop = jest.fn()
+      const mockStream = {
+        getTracks: jest.fn(() => [{ stop: mockStop }]),
+      }
       
-      // Verify stream was stopped
-      expect(mockStop).toHaveBeenCalled()
+      mockGetDisplayMedia.mockResolvedValue(mockStream)
+      
+      const user = userEvent.setup()
+      render(<ChatPage />)
+      
+      const screenshotButton = screen.getByText('📸')
+      await user.click(screenshotButton)
+      
+      await waitFor(() => {
+        expect(screen.getByTestId('image-cropper')).toBeInTheDocument()
+      })
+      
+      // Click cancel
+      const cancelButton = screen.getByText('Cancel')
+      await user.click(cancelButton)
+      
+      // Cropper should be gone
+      await waitFor(() => {
+        expect(screen.queryByTestId('image-cropper')).not.toBeInTheDocument()
+      })
+      
+      // No message should be added
+      expect(mockSetMessages).not.toHaveBeenCalled()
     })
 
     it('should handle screenshot capture errors gracefully', async () => {
