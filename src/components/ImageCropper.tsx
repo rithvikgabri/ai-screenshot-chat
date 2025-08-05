@@ -69,7 +69,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     setCroppedAreaPixels(croppedAreaPixels)
   }, [])
 
-  const handleApplyCrop = async () => {
+  const handleApplyCrop = useCallback(async () => {
     if (!croppedAreaPixels) return
 
     setIsProcessing(true)
@@ -81,7 +81,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     } finally {
       setIsProcessing(false)
     }
-  }
+  }, [croppedAreaPixels, imageSrc, onCropComplete])
 
   const handleSkipCrop = () => {
     onCropComplete(imageSrc)
@@ -92,14 +92,14 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onCancel()
-      } else if (e.key === 'Enter' && !isProcessing) {
+      } else if (e.key === 'Enter' && !isProcessing && croppedAreaPixels) {
         handleApplyCrop()
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [onCancel, isProcessing, croppedAreaPixels])
+  }, [onCancel, isProcessing, croppedAreaPixels, handleApplyCrop])
 
   return (
     <div 

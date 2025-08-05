@@ -1,11 +1,19 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { ImageCropper } from '../ImageCropper'
+
+interface MockCropperProps {
+  crop: { x: number; y: number }
+  zoom: number
+  onCropChange: (crop: { x: number; y: number }) => void
+  onZoomChange: (zoom: number) => void
+  children?: React.ReactNode
+}
 
 // Mock react-easy-crop
 jest.mock('react-easy-crop', () => ({
   __esModule: true,
-  default: ({ crop, zoom, onCropChange, onZoomChange, children }: any) => (
+  default: ({ crop, zoom, onCropChange, onZoomChange, children }: MockCropperProps) => (
     <div data-testid="react-easy-crop">
       <div data-testid="crop-values">
         crop: {JSON.stringify(crop)}, zoom: {zoom}

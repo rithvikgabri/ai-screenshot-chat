@@ -8,9 +8,14 @@ jest.mock('@ai-sdk/react', () => ({
   useChat: jest.fn(),
 }))
 
+interface MockImageCropperProps {
+  onCropComplete: (url: string) => void
+  onCancel: () => void
+}
+
 // Mock ImageCropper component
 jest.mock('@/components/ImageCropper', () => ({
-  ImageCropper: ({ onCropComplete, onCancel }: any) => (
+  ImageCropper: ({ onCropComplete, onCancel }: MockImageCropperProps) => (
     <div data-testid="image-cropper">
       <button onClick={() => onCropComplete('data:image/png;base64,cropped')}>
         Apply Crop
