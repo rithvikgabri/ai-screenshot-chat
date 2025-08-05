@@ -1,12 +1,21 @@
 'use client'
 
 import { useChat } from '@ai-sdk/react'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { MyUIMessage } from '@/lib/types'
 
 export default function ChatPage() {
-  const { messages, sendMessage, setMessages } = useChat<MyUIMessage>()
+  const { messages, sendMessage, setMessages, isLoading } = useChat<MyUIMessage>()
   const [input, setInput] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const captureScreen = async () => {
     try {
@@ -59,59 +68,99 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col w-full max-w-md mx-auto py-24 stretch">
-      <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+    <div className="flex flex-col h-screen max-w-4xl mx-auto">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center space-y-4">
+              <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+                AI Screenshot Chat
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Start a conversation or capture a screenshot to begin
+              </p>
+            </div>
+          </div>
+        )}
         {messages.map(message => (
-          <div key={message.id} className="whitespace-pre-wrap">
-            <strong>{message.role === 'user' ? 'You:' : 'AI:'}</strong>
-            {message.parts.map((part, i) => {
-              switch (part.type) {
-                case 'text':
-                  return <div key={`${message.id}-${i}`}>{part.text}</div>
-                case 'image-screenshot':
-                  return (
-                    <img 
-                      key={`${message.id}-${i}`} 
-                      src={part.data.url} 
-                      alt="Screenshot"
-                      className="mt-2 rounded max-w-full"
-                    />
-                  )
-                default:
-                  return null
-              }
-            })}
+          <div 
+            key={message.id} 
+            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div 
+              className={`max-w-[80%] rounded-lg p-4 ${
+                message.role === 'user' 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+              }`}
+            >
+              {message.parts.map((part, i) => {
+                switch (part.type) {
+                  case 'text':
+                    return <div key={`${message.id}-${i}`} className="whitespace-pre-wrap">{part.text}</div>
+                  case 'image-screenshot':
+                    return (
+                      <img 
+                        key={`${message.id}-${i}`} 
+                        src={part.data.url} 
+                        alt="Screenshot"
+                        className="mt-2 rounded-lg max-w-full shadow-lg"
+                      />
+                    )
+                  default:
+                    return null
+                }
+              })}
+            </div>
           </div>
         ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+              <div className="flex space-x-2">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
       </div>
 
-      <form
-        onSubmit={e => {
-          e.preventDefault()
-          if (input.trim()) {
-            sendMessage({ text: input })
-            setInput('')
-          }
-        }}
-        className="sticky bottom-0 flex gap-1"
-      >
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="Ask me anything..."
-          className="flex-1 border p-2 rounded"
-        />
-        <button type="submit" className="px-4 py-2 border rounded">
-          Send
-        </button>
-        <button
-          type="button"
-          onClick={captureScreen}
-          className="px-2 py-2 border rounded"
+      <div className="border-t dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            if (input.trim()) {
+              sendMessage({ text: input })
+              setInput('')
+            }
+          }}
+          className="flex gap-2"
         >
-          📸
-        </button>
-      </form>
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            placeholder="Ask me anything..."
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+          />
+          <button 
+            type="submit" 
+            className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+          >
+            Send
+          </button>
+          <button
+            type="button"
+            onClick={captureScreen}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            title="Capture screenshot"
+          >
+            📸
+          </button>
+        </form>
+      </div>
     </div>
   )
 }

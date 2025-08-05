@@ -43,6 +43,13 @@ describe('ChatPage', () => {
     expect(screen.getByText('📸')).toBeInTheDocument()
   })
 
+  it('should show empty state when no messages', () => {
+    render(<ChatPage />)
+    
+    expect(screen.getByText('AI Screenshot Chat')).toBeInTheDocument()
+    expect(screen.getByText('Start a conversation or capture a screenshot to begin')).toBeInTheDocument()
+  })
+
   it('should display messages', () => {
     const mockMessages = [
       {
@@ -66,9 +73,7 @@ describe('ChatPage', () => {
 
     render(<ChatPage />)
     
-    expect(screen.getByText('You:')).toBeInTheDocument()
     expect(screen.getByText('Hello')).toBeInTheDocument()
-    expect(screen.getByText('AI:')).toBeInTheDocument()
     expect(screen.getByText('Hi there!')).toBeInTheDocument()
   })
 
@@ -122,7 +127,7 @@ describe('ChatPage', () => {
     
     const image = screen.getByRole('img')
     expect(image).toHaveAttribute('src', 'data:image/png;base64,test')
-    expect(image).toHaveClass('mt-2', 'rounded')
+    expect(image).toHaveClass('mt-2', 'rounded-lg', 'max-w-full', 'shadow-lg')
   })
 
   describe('Screenshot functionality', () => {
