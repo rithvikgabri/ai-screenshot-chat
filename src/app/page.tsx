@@ -3,7 +3,7 @@
 import { useChat } from '@ai-sdk/react'
 import { useState, useEffect, useRef } from 'react'
 import type { MyUIMessage } from '@/lib/types'
-import { ImageCropper } from '@/components/ImageCropper'
+import { ScreenshotSelector } from '@/components/ScreenshotSelector'
 
 export default function ChatPage() {
   const { messages, sendMessage, setMessages } = useChat<MyUIMessage>()
@@ -162,9 +162,9 @@ export default function ChatPage() {
       </div>
 
       {tempScreenshot && (
-        <ImageCropper
+        <ScreenshotSelector
           imageSrc={tempScreenshot}
-          onCropComplete={handleCropComplete}
+          onSelectionComplete={handleCropComplete}
           onCancel={handleCropCancel}
         />
       )}
