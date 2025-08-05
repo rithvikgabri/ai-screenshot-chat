@@ -8,17 +8,17 @@ jest.mock('@ai-sdk/react', () => ({
   useChat: jest.fn(),
 }))
 
-interface MockImageCropperProps {
-  onCropComplete: (url: string) => void
+interface MockScreenshotSelectorProps {
+  onSelectionComplete: (url: string) => void
   onCancel: () => void
 }
 
-// Mock ImageCropper component
-jest.mock('@/components/ImageCropper', () => ({
-  ImageCropper: ({ onCropComplete, onCancel }: MockImageCropperProps) => (
-    <div data-testid="image-cropper">
-      <button onClick={() => onCropComplete('data:image/png;base64,cropped')}>
-        Apply Crop
+// Mock ScreenshotSelector component
+jest.mock('@/components/ScreenshotSelector', () => ({
+  ScreenshotSelector: ({ onSelectionComplete, onCancel }: MockScreenshotSelectorProps) => (
+    <div data-testid="screenshot-selector">
+      <button onClick={() => onSelectionComplete('data:image/png;base64,selected')}>
+        Complete Selection
       </button>
       <button onClick={onCancel}>Cancel</button>
     </div>
@@ -166,7 +166,7 @@ describe('ChatPage', () => {
       })
     })
 
-    it('should show image cropper when screenshot is captured', async () => {
+    it('should show screenshot selector when screenshot is captured', async () => {
       const mockStop = jest.fn()
       const mockStream = {
         getTracks: jest.fn(() => [{ stop: mockStop }]),
@@ -187,9 +187,9 @@ describe('ChatPage', () => {
         })
       })
       
-      // Should show the cropper instead of immediately adding to messages
+      // Should show the selector instead of immediately adding to messages
       await waitFor(() => {
-        expect(screen.getByTestId('image-cropper')).toBeInTheDocument()
+        expect(screen.getByTestId('screenshot-selector')).toBeInTheDocument()
       })
       
       // Verify stream was stopped
@@ -199,7 +199,7 @@ describe('ChatPage', () => {
       expect(mockSetMessages).not.toHaveBeenCalled()
     })
 
-    it('should add cropped image to messages when crop is applied', async () => {
+    it('should add selected image to messages when selection is completed', async () => {
       const mockStop = jest.fn()
       const mockStream = {
         getTracks: jest.fn(() => [{ stop: mockStop }]),
@@ -214,12 +214,12 @@ describe('ChatPage', () => {
       await user.click(screenshotButton)
       
       await waitFor(() => {
-        expect(screen.getByTestId('image-cropper')).toBeInTheDocument()
+        expect(screen.getByTestId('screenshot-selector')).toBeInTheDocument()
       })
       
-      // Click apply crop
-      const applyCropButton = screen.getByText('Apply Crop')
-      await user.click(applyCropButton)
+      // Click complete selection
+      const completeButton = screen.getByText('Complete Selection')
+      await user.click(completeButton)
       
       await waitFor(() => {
         expect(mockSetMessages).toHaveBeenCalled()
@@ -230,10 +230,10 @@ describe('ChatPage', () => {
       expect(newMessages).toHaveLength(1)
       expect(newMessages[0].role).toBe('user')
       expect(newMessages[0].parts[0].type).toBe('image-screenshot')
-      expect(newMessages[0].parts[0].data.url).toBe('data:image/png;base64,cropped')
+      expect(newMessages[0].parts[0].data.url).toBe('data:image/png;base64,selected')
     })
 
-    it('should cancel cropping when cancel button is clicked', async () => {
+    it('should cancel selection when cancel button is clicked', async () => {
       const mockStop = jest.fn()
       const mockStream = {
         getTracks: jest.fn(() => [{ stop: mockStop }]),
@@ -248,16 +248,16 @@ describe('ChatPage', () => {
       await user.click(screenshotButton)
       
       await waitFor(() => {
-        expect(screen.getByTestId('image-cropper')).toBeInTheDocument()
+        expect(screen.getByTestId('screenshot-selector')).toBeInTheDocument()
       })
       
       // Click cancel
       const cancelButton = screen.getByText('Cancel')
       await user.click(cancelButton)
       
-      // Cropper should be gone
+      // Selector should be gone
       await waitFor(() => {
-        expect(screen.queryByTestId('image-cropper')).not.toBeInTheDocument()
+        expect(screen.queryByTestId('screenshot-selector')).not.toBeInTheDocument()
       })
       
       // No message should be added
