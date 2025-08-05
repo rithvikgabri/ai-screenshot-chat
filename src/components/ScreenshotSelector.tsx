@@ -158,6 +158,7 @@ export function ScreenshotSelector({ imageSrc, onSelectionComplete, onCancel }: 
       </div>
 
       {/* Screenshot image */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         ref={imageRef}
         src={imageSrc}

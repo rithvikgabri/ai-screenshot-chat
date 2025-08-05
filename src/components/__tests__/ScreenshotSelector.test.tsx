@@ -111,13 +111,13 @@ describe('ScreenshotSelector', () => {
     const originalCreateElement = document.createElement
     document.createElement = jest.fn((tagName) => {
       if (tagName === 'canvas') {
-        return mockCanvas as any
+        return mockCanvas as unknown as HTMLCanvasElement
       }
       return originalCreateElement.call(document, tagName)
     })
 
     const originalImage = global.Image
-    global.Image = class {
+    global.Image = class MockImage extends window.Image {
       src = ''
       onload: (() => void) | null = null
       naturalWidth = 1000
@@ -125,11 +125,12 @@ describe('ScreenshotSelector', () => {
       width = 1000
       height = 800
       constructor() {
+        super()
         setTimeout(() => {
           if (this.onload) this.onload()
         }, 0)
       }
-    } as any
+    }
 
     render(
       <ScreenshotSelector
