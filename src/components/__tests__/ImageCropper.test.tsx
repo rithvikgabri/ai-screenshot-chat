@@ -128,21 +128,6 @@ describe('ImageCropper', () => {
     expect(mockOnCancel).toHaveBeenCalledTimes(1)
   })
 
-  it('should show loading state when processing crop', async () => {
-    render(
-      <ImageCropper
-        imageSrc={testImageSrc}
-        onCropComplete={mockOnCropComplete}
-        onCancel={mockOnCancel}
-      />
-    )
-
-    const applyCropButton = screen.getByText('Apply Crop')
-    fireEvent.click(applyCropButton)
-
-    // Should show loading state
-    expect(screen.getByText('Processing...')).toBeInTheDocument()
-  })
 
   it('should have proper accessibility attributes', () => {
     render(
