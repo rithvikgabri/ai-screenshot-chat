@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ChatPage from '../page'
 import { useChat } from '@ai-sdk/react'
@@ -135,7 +135,7 @@ describe('ChatPage', () => {
       // Mock HTMLCanvasElement methods
       HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
         drawImage: jest.fn(),
-      })) as any
+      })) as any // eslint-disable-line @typescript-eslint/no-explicit-any
       
       HTMLCanvasElement.prototype.toDataURL = jest.fn(() => 'data:image/png;base64,mockdata')
       

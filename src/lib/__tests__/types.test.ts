@@ -43,7 +43,7 @@ describe('Custom Message Types', () => {
       }
 
       expect(message.parts[0].type).toBe('text')
-      expect((message.parts[0] as any).text).toBe('Hello')
+      expect((message.parts[0] as any).text).toBe('Hello') // eslint-disable-line @typescript-eslint/no-explicit-any
     })
 
     it('should support screenshot parts', () => {

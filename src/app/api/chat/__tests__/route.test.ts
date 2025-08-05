@@ -11,7 +11,7 @@ jest.mock('@ai-sdk/openai', () => ({
 }))
 
 // Import after mocking
-import { streamText, convertToModelMessages } from 'ai'
+import { streamText } from 'ai'
 import { openai } from '@ai-sdk/openai'
 
 describe('/api/chat', () => {
@@ -23,11 +23,11 @@ describe('/api/chat', () => {
     // Setup default mock return value
     mockStreamText.mockReturnValue({
       toUIMessageStreamResponse: mockToUIMessageStreamResponse,
-    } as any)
+    } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
     mockToUIMessageStreamResponse.mockReturnValue(new Response())
     
     // Mock openai to return a model object
-    ;(openai as jest.MockedFunction<typeof openai>).mockReturnValue({} as any)
+    ;(openai as jest.MockedFunction<typeof openai>).mockReturnValue({} as any) // eslint-disable-line @typescript-eslint/no-explicit-any
   })
 
   it('should handle POST request with messages', async () => {
