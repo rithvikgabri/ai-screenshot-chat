@@ -3,10 +3,12 @@
 import { useChat } from '@ai-sdk/react'
 import { useState, useEffect, useRef } from 'react'
 import type { MyUIMessage } from '@/lib/types'
+import { ImageCropper } from '@/components/ImageCropper'
 
 export default function ChatPage() {
   const { messages, sendMessage, setMessages } = useChat<MyUIMessage>()
   const [input, setInput] = useState('')
+  const [tempScreenshot, setTempScreenshot] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -49,20 +51,29 @@ export default function ChatPage() {
       // Stop capture to free resources
       stream.getTracks().forEach(track => track.stop())
 
-      // Add screenshot to chat
-      const newMessage = {
-        id: crypto.randomUUID(),
-        role: 'user',
-        content: '',
-        parts: [{
-          type: 'image-screenshot',
-          data: { url: dataURL }
-        }]
-      } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-      setMessages(prevMessages => [...prevMessages, newMessage])
+      // Show cropper instead of directly adding to chat
+      setTempScreenshot(dataURL)
     } catch (error) {
       console.error('Error capturing screen:', error)
     }
+  }
+
+  const handleCropComplete = (croppedImageUrl: string) => {
+    const newMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: '',
+      parts: [{
+        type: 'image-screenshot',
+        data: { url: croppedImageUrl }
+      }]
+    } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    setMessages(prevMessages => [...prevMessages, newMessage])
+    setTempScreenshot(null)
+  }
+
+  const handleCropCancel = () => {
+    setTempScreenshot(null)
   }
 
   return (
@@ -149,6 +160,14 @@ export default function ChatPage() {
           </button>
         </form>
       </div>
+
+      {tempScreenshot && (
+        <ImageCropper
+          imageSrc={tempScreenshot}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
+      )}
     </div>
   )
 }
