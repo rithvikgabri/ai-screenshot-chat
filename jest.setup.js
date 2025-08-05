@@ -108,6 +108,12 @@ global.IntersectionObserver = class IntersectionObserver {
   unobserve() {}
 }
 
+// Mock crypto.randomUUID
+if (!global.crypto) {
+  global.crypto = {}
+}
+global.crypto.randomUUID = () => Math.random().toString(36).substring(2)
+
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
   constructor(callback) {}
