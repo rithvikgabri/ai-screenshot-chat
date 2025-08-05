@@ -28,7 +28,7 @@ describe('ScreenshotSelector', () => {
     expect(image).toHaveAttribute('alt', 'Screenshot to select from')
   })
 
-  it('should show instructions text', () => {
+  it('should show title and instructions', () => {
     render(
       <ScreenshotSelector
         imageSrc={testImageSrc}
@@ -37,7 +37,22 @@ describe('ScreenshotSelector', () => {
       />
     )
 
+    expect(screen.getByText('Select Screenshot Area')).toBeInTheDocument()
     expect(screen.getByText(/Click and drag/)).toBeInTheDocument()
+  })
+
+  it('should have a close button', () => {
+    render(
+      <ScreenshotSelector
+        imageSrc={testImageSrc}
+        onSelectionComplete={mockOnSelectionComplete}
+        onCancel={mockOnCancel}
+      />
+    )
+
+    const closeButton = screen.getByLabelText('Cancel selection')
+    fireEvent.click(closeButton)
+    expect(mockOnCancel).toHaveBeenCalledTimes(1)
   })
 
   it('should cancel on Escape key', () => {
@@ -222,7 +237,7 @@ describe('ScreenshotSelector', () => {
     expect(mockOnSelectionComplete).not.toHaveBeenCalled()
   })
 
-  it('should have proper cursor style', () => {
+  it('should have proper cursor style on selection area', () => {
     render(
       <ScreenshotSelector
         imageSrc={testImageSrc}
@@ -231,7 +246,7 @@ describe('ScreenshotSelector', () => {
       />
     )
 
-    const overlay = screen.getByRole('dialog')
-    expect(overlay).toHaveClass('cursor-crosshair')
+    const selectionArea = screen.getByRole('dialog')
+    expect(selectionArea).toHaveClass('cursor-crosshair')
   })
 })

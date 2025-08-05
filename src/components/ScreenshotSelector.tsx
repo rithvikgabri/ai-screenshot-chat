@@ -143,85 +143,107 @@ export function ScreenshotSelector({ imageSrc, onSelectionComplete, onCancel }: 
   const showSelection = isSelecting && selectionBox && (selectionBox.width > 0 || selectionBox.height > 0)
 
   return (
-    <div 
-      ref={overlayRef}
-      className="fixed inset-0 bg-black flex items-center justify-center cursor-crosshair select-none"
-      role="dialog"
-      aria-label="Screenshot selection area"
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-    >
-      {/* Instructions */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/75 text-white px-4 py-2 rounded-lg pointer-events-none z-20">
-        <p className="text-sm">Click and drag to select area • Press ESC to cancel</p>
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl max-w-6xl max-h-[90vh] mx-4 overflow-hidden">
+        {/* Header */}
+        <div className="bg-gray-100 dark:bg-gray-900 px-4 py-3 border-b dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Select Screenshot Area
+            </h2>
+            <button
+              onClick={onCancel}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              aria-label="Cancel selection"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Click and drag to select area • Press ESC to cancel
+          </p>
+        </div>
+
+        {/* Selection area */}
+        <div 
+          ref={overlayRef}
+          className="relative bg-gray-50 dark:bg-gray-900 cursor-crosshair select-none overflow-auto"
+          style={{ maxHeight: 'calc(90vh - 80px)' }}
+          role="dialog"
+          aria-label="Screenshot selection area"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        >
+          {/* Screenshot image */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            ref={imageRef}
+            src={imageSrc}
+            alt="Screenshot to select from"
+            className="block"
+            draggable={false}
+          />
+
+          {/* Selection overlay */}
+          {showSelection && selectionBox && (
+            <>
+              {/* Dark overlay outside selection */}
+              <div className="absolute inset-0 pointer-events-none">
+                {/* Top */}
+                <div 
+                  className="absolute left-0 right-0 bg-black/50"
+                  style={{ top: 0, height: selectionBox.top }}
+                />
+                {/* Bottom */}
+                <div 
+                  className="absolute left-0 right-0 bg-black/50"
+                  style={{ top: selectionBox.top + selectionBox.height, bottom: 0 }}
+                />
+                {/* Left */}
+                <div 
+                  className="absolute bg-black/50"
+                  style={{ 
+                    left: 0, 
+                    top: selectionBox.top, 
+                    width: selectionBox.left, 
+                    height: selectionBox.height 
+                  }}
+                />
+                {/* Right */}
+                <div 
+                  className="absolute bg-black/50"
+                  style={{ 
+                    left: selectionBox.left + selectionBox.width, 
+                    right: 0, 
+                    top: selectionBox.top, 
+                    height: selectionBox.height 
+                  }}
+                />
+              </div>
+
+              {/* Selection box */}
+              <div
+                data-testid="selection-box"
+                className="absolute border-2 border-blue-500 shadow-lg pointer-events-none"
+                style={{
+                  left: selectionBox.left,
+                  top: selectionBox.top,
+                  width: selectionBox.width,
+                  height: selectionBox.height
+                }}
+              >
+                {/* Dimensions display */}
+                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                  {selectionBox.width} × {selectionBox.height}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-
-      {/* Screenshot image */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        ref={imageRef}
-        src={imageSrc}
-        alt="Screenshot to select from"
-        className="max-w-full max-h-full object-contain"
-        draggable={false}
-      />
-
-      {/* Selection overlay */}
-      {showSelection && selectionBox && (
-        <>
-          {/* Dark overlay outside selection */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* Top */}
-            <div 
-              className="absolute left-0 right-0 bg-black/50"
-              style={{ top: 0, height: selectionBox.top }}
-            />
-            {/* Bottom */}
-            <div 
-              className="absolute left-0 right-0 bg-black/50"
-              style={{ top: selectionBox.top + selectionBox.height, bottom: 0 }}
-            />
-            {/* Left */}
-            <div 
-              className="absolute bg-black/50"
-              style={{ 
-                left: 0, 
-                top: selectionBox.top, 
-                width: selectionBox.left, 
-                height: selectionBox.height 
-              }}
-            />
-            {/* Right */}
-            <div 
-              className="absolute bg-black/50"
-              style={{ 
-                left: selectionBox.left + selectionBox.width, 
-                right: 0, 
-                top: selectionBox.top, 
-                height: selectionBox.height 
-              }}
-            />
-          </div>
-
-          {/* Selection box */}
-          <div
-            data-testid="selection-box"
-            className="absolute border-2 border-white shadow-lg pointer-events-none"
-            style={{
-              left: selectionBox.left,
-              top: selectionBox.top,
-              width: selectionBox.width,
-              height: selectionBox.height
-            }}
-          >
-            {/* Dimensions display */}
-            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black/75 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-              {selectionBox.width} × {selectionBox.height}
-            </div>
-          </div>
-        </>
-      )}
     </div>
   )
 }
